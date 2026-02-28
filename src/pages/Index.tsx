@@ -13,13 +13,13 @@ const ogGames = [
 const waffleGames = [
 {
   title: "WaffleCraft",
-  description: "Minecraft but better. Build, mine, and survive in a world made entirely of waffles.",
+  description: "Minecraft but better. Build, mine, and survive in a Minecraft like world but with some twists...",
   icon: "🧇",
   available: false
 },
 {
   title: "Waffle Works",
-  description: "Click. Bake. Automate. A waffle-powered idle game inspired by Cookie Clicker.",
+  description: "Click. Produce. Automate. A waffle idle game inspired by Cookie Clicker.",
   icon: "🏭",
   available: false
 }];
