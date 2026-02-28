@@ -2,28 +2,28 @@ import heroBg from "@/assets/hero-bg.png";
 import GameCard from "@/components/GameCard";
 
 const ogGames = [
-  {
-    title: "Storm Surge Diner",
-    description: "A Category 5 hurricane is hitting. Keep the Waffle House open, serve customers, and survive the storm.",
-    icon: "🌀",
-    available: false,
-  },
-];
+{
+  title: "Storm Surge Diner",
+  description: "A Category 5 hurricane is hitting. Keep the Waffle House open, serve customers, and survive the storm.",
+  icon: "🌀",
+  available: false
+}];
+
 
 const waffleGames = [
-  {
-    title: "WaffleCraft",
-    description: "Minecraft but better. Build, mine, and survive in a world made entirely of waffles.",
-    icon: "🧇",
-    available: false,
-  },
-  {
-    title: "Waffle Works",
-    description: "Click. Bake. Automate. A waffle-powered idle game inspired by Cookie Clicker.",
-    icon: "🏭",
-    available: false,
-  },
-];
+{
+  title: "WaffleCraft",
+  description: "Minecraft but better. Build, mine, and survive in a world made entirely of waffles.",
+  icon: "🧇",
+  available: false
+},
+{
+  title: "Waffle Works",
+  description: "Click. Bake. Automate. A waffle-powered idle game inspired by Cookie Clicker.",
+  icon: "🏭",
+  available: false
+}];
+
 
 const Index = () => {
   return (
@@ -33,16 +33,16 @@ const Index = () => {
         <img
           src={heroBg}
           alt="Apocalyptic Waffle House scene"
-          className="absolute inset-0 h-full w-full object-cover opacity-40"
-        />
+          className="absolute inset-0 h-full w-full object-cover opacity-40" />
+
         <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background" />
         <div className="relative z-10 px-6 text-center">
           <h1 className="mb-2 font-display text-6xl tracking-tight text-primary text-glow sm:text-8xl">
             APOCALYPSE WAFFLE
           </h1>
-          <p className="mx-auto max-w-xl text-lg text-card-foreground sm:text-xl">
-            The world is ending. The Waffle House is open. <br />
-            <span className="text-primary">Survive the disaster. Serve the waffles.</span>
+          <p className="mx-auto max-w-xl text-lg sm:text-xl text-primary">Apocalypse Waffle is a gaming hub featuring waffle-themed twists on classic games and intense, original survival challenges. Instead of serving food, you play as a customer fighting to survive catastrophic natural disasters while trapped inside a Waffle House.
+            <br />
+            <span className="text-primary"></span>
           </p>
         </div>
       </section>
@@ -53,9 +53,9 @@ const Index = () => {
           The OG Disaster Survival Games
         </h2>
         <div className="mx-auto grid max-w-md gap-6">
-          {ogGames.map((game) => (
-            <GameCard key={game.title} {...game} />
-          ))}
+          {ogGames.map((game) =>
+          <GameCard key={game.title} {...game} />
+          )}
         </div>
       </section>
 
@@ -65,13 +65,13 @@ const Index = () => {
           The Waffle Inspired Games
         </h2>
         <div className="grid gap-6 sm:grid-cols-2">
-          {waffleGames.map((game) => (
-            <GameCard key={game.title} {...game} />
-          ))}
+          {waffleGames.map((game) =>
+          <GameCard key={game.title} {...game} />
+          )}
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Index;
