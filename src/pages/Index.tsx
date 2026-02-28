@@ -1,41 +1,26 @@
 import heroBg from "@/assets/hero-bg.png";
 import GameCard from "@/components/GameCard";
 
-const games = [
+const ogGames = [
   {
-    title: "Tornado Terror",
-    description: "A massive F5 tornado is bearing down on your Waffle House. Barricade, serve, survive.",
-    icon: "🌪️",
+    title: "Storm Surge Diner",
+    description: "A Category 5 hurricane is hitting. Keep the Waffle House open, serve customers, and survive the storm.",
+    icon: "🌀",
+    available: false,
+  },
+];
+
+const waffleGames = [
+  {
+    title: "WaffleCraft",
+    description: "Minecraft but better. Build, mine, and survive in a world made entirely of waffles.",
+    icon: "🧇",
     available: false,
   },
   {
-    title: "Hurricane Hash Browns",
-    description: "Category 5 winds are ripping the roof off. Keep the grill running no matter what.",
-    icon: "🌊",
-    available: false,
-  },
-  {
-    title: "Earthquake Eggs",
-    description: "The ground is shaking but the orders keep coming. Don't drop the plates.",
-    icon: "🫨",
-    available: false,
-  },
-  {
-    title: "Blizzard Breakfast",
-    description: "Snowed in with a full house of hungry customers and dwindling supplies.",
-    icon: "❄️",
-    available: false,
-  },
-  {
-    title: "Volcano Waffles",
-    description: "Lava is flowing down Main Street. The Waffle House stays open.",
-    icon: "🌋",
-    available: false,
-  },
-  {
-    title: "Meteor Melt",
-    description: "An asteroid impact is imminent. One last shift before the end of the world.",
-    icon: "☄️",
+    title: "Waffle Works",
+    description: "Click. Bake. Automate. A waffle-powered idle game inspired by Cookie Clicker.",
+    icon: "🏭",
     available: false,
   },
 ];
@@ -62,19 +47,28 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Games Grid */}
-      <section className="mx-auto max-w-5xl px-6 pb-20 pt-10">
+      {/* OG Disaster Survival Games */}
+      <section className="mx-auto max-w-5xl px-6 pb-12 pt-10">
         <h2 className="mb-8 text-center font-display text-3xl text-primary sm:text-4xl">
-          Choose Your Disaster
+          The OG Disaster Survival Games
         </h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {games.map((game) => (
+        <div className="mx-auto grid max-w-md gap-6">
+          {ogGames.map((game) => (
             <GameCard key={game.title} {...game} />
           ))}
         </div>
-        <p className="mt-10 text-center text-sm text-muted-foreground">
-          Games will be unlocked as they are added. Stay tuned. 🧇
-        </p>
+      </section>
+
+      {/* Waffle Inspired Games */}
+      <section className="mx-auto max-w-5xl px-6 pb-20 pt-4">
+        <h2 className="mb-8 text-center font-display text-3xl text-primary sm:text-4xl">
+          The Waffle Inspired Games
+        </h2>
+        <div className="grid gap-6 sm:grid-cols-2">
+          {waffleGames.map((game) => (
+            <GameCard key={game.title} {...game} />
+          ))}
+        </div>
       </section>
     </div>
   );
