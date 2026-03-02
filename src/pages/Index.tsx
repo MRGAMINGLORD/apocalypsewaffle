@@ -1,5 +1,7 @@
 import heroBg from "@/assets/hero-bg.png";
 import GameCard from "@/components/GameCard";
+import FeedbackForm from "@/components/FeedbackForm";
+import WhatsNew from "@/components/WhatsNew";
 
 const ogGames = [
 {
@@ -47,6 +49,9 @@ const Index = () => {
         </div>
       </section>
 
+      {/* What's New */}
+      <WhatsNew />
+
       {/* OG Disaster Survival Games */}
       <section className="mx-auto max-w-5xl px-6 pb-12 pt-10">
         <h2 className="mb-8 text-center font-display text-3xl text-primary sm:text-4xl">
@@ -70,6 +75,9 @@ const Index = () => {
           )}
         </div>
       </section>
+
+      {/* Feedback */}
+      <FeedbackForm />
     </div>);
 
 };
