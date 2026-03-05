@@ -29,6 +29,13 @@ const Index = () => {
       <WhatsNew />
 
 
+      {/* Games */}
+      <section className="mx-auto max-w-5xl px-6 pb-12 pt-10">
+        <h2 className="mb-8 text-center font-display text-3xl text-primary sm:text-4xl">
+          Games
+        </h2>
+      </section>
+
       {/* Feedback */}
       <FeedbackForm />
     </div>);
