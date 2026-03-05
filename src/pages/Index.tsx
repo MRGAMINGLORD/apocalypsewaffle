@@ -1,30 +1,6 @@
 import heroBg from "@/assets/hero-bg.png";
-import GameCard from "@/components/GameCard";
 import FeedbackForm from "@/components/FeedbackForm";
 import WhatsNew from "@/components/WhatsNew";
-
-const ogGames = [
-{
-  title: "Storm Surge Diner",
-  description: "A Category 5 hurricane is hitting. Keep the Waffle House open, serve customers, and survive the storm.",
-  icon: "🌀",
-  available: false
-}];
-
-
-const waffleGames = [
-{
-  title: "WaffleCraft",
-  description: "Minecraft but better. Build, mine, and survive in a Minecraft like world but with some twists...",
-  icon: "🧇",
-  available: false
-},
-{
-  title: "Waffle Works",
-  description: "Click. Produce. Automate. A waffle idle game inspired by Cookie Clicker.",
-  icon: "🏭",
-  available: false
-}];
 
 
 const Index = () => {
@@ -52,29 +28,6 @@ const Index = () => {
       {/* What's New */}
       <WhatsNew />
 
-      {/* OG Disaster Survival Games */}
-      <section className="mx-auto max-w-5xl px-6 pb-12 pt-10">
-        <h2 className="mb-8 text-center font-display text-3xl text-primary sm:text-4xl">
-          The OG Disaster Survival Games
-        </h2>
-        <div className="mx-auto grid max-w-md gap-6">
-          {ogGames.map((game) =>
-          <GameCard key={game.title} {...game} />
-          )}
-        </div>
-      </section>
-
-      {/* Waffle Inspired Games */}
-      <section className="mx-auto max-w-5xl px-6 pb-20 pt-4">
-        <h2 className="mb-8 text-center font-display text-3xl text-primary sm:text-4xl">
-          The Waffle Inspired Games
-        </h2>
-        <div className="grid gap-6 sm:grid-cols-2">
-          {waffleGames.map((game) =>
-          <GameCard key={game.title} {...game} />
-          )}
-        </div>
-      </section>
 
       {/* Feedback */}
       <FeedbackForm />

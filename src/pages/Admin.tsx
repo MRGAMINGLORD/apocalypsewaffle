@@ -69,6 +69,11 @@ const Admin = () => {
     loadData();
   };
 
+  const deleteFeedback = async (id: string) => {
+    await supabase.from("feedback").delete().eq("id", id);
+    loadData();
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
@@ -120,12 +125,17 @@ const Admin = () => {
           <div className="space-y-3">
             {feedback.length === 0 && <p className="text-muted-foreground">No feedback yet.</p>}
             {feedback.map((f) => (
-              <div key={f.id} className="rounded-lg border border-border bg-card p-4">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="font-semibold text-primary">{f.name}</span>
-                  <span className="text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</span>
+              <div key={f.id} className="flex items-start justify-between rounded-lg border border-border bg-card p-4">
+                <div>
+                  <div className="mb-1 flex items-center gap-3">
+                    <span className="font-semibold text-primary">{f.name}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(f.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-sm text-card-foreground">{f.message}</p>
                 </div>
-                <p className="text-sm text-card-foreground">{f.message}</p>
+                <Button variant="ghost" size="icon" onClick={() => deleteFeedback(f.id)}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
               </div>
             ))}
           </div>
