@@ -3,11 +3,9 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // ADD THE LINE BELOW (Replace 'your-repo-name' with your actual repo name)
+  // IMPORTANT: Replace 'YOUR_REPO_NAME' with the actual name of your project
   base: '/apocalypsewaffle/', 
-  
   server: {
     host: "::",
     port: 8080,
@@ -22,3 +20,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+}));
