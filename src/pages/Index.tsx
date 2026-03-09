@@ -1,5 +1,6 @@
 import heroBg from "@/assets/hero-bg.png";
 import FeedbackForm from "@/components/FeedbackForm";
+import GameCard from "@/components/GameCard";
 import WhatsNew from "@/components/WhatsNew";
 
 
@@ -34,6 +35,32 @@ const Index = () => {
         <h2 className="mb-8 text-center font-display text-3xl text-primary sm:text-4xl">
           Games
         </h2>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <GameCard
+            title="Belgium Blitz"
+            description="A high-speed racing game — buckle up and burn rubber through waffle-themed tracks."
+            icon="🏎️"
+            available={false}
+          />
+          <GameCard
+            title="Waffle Works"
+            description="A cookie clicker-style idle game. Keep the batter flowing and the iron hot!"
+            icon="🧇"
+            available={false}
+          />
+          <GameCard
+            title="Waffle Craft"
+            description="A block-building survival adventure — Minecraft, but crispier and better."
+            icon="⛏️"
+            available={false}
+          />
+          <GameCard
+            title="Storm Surge Diner"
+            description="Survive a catastrophic hurricane while trapped inside a Waffle House. Can you make it out?"
+            icon="🌀"
+            available={false}
+          />
+        </div>
       </section>
 
       {/* Feedback */}
