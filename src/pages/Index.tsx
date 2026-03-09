@@ -1,5 +1,6 @@
 import heroBg from "@/assets/hero-bg.png";
 import FeedbackForm from "@/components/FeedbackForm";
+import GameCard from "@/components/GameCard";
 import WhatsNew from "@/components/WhatsNew";
 
 
