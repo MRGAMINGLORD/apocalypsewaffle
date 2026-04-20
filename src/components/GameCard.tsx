@@ -23,13 +23,13 @@ const GameCard = ({ title, description, cover, icon, available = false, playUrl,
   return (
     <button
       onClick={handleClick}
-      className={`group relative w-full overflow-hidden rounded-lg border text-left transition-all duration-300 ${
+      className={`group relative w-full overflow-hidden rounded-lg border text-left transition-transform duration-300 ${
         available
-          ? "border-primary/40 bg-card hover:border-primary hover:border-glow cursor-pointer"
+          ? "border-primary/40 bg-card cursor-pointer hover:scale-[1.03] hover:border-primary animate-border-pulse"
           : "border-border bg-card/50 cursor-not-allowed opacity-60"
       }`}
     >
-      <div className="relative aspect-video w-full overflow-hidden bg-muted">
+      <div className="relative mx-auto aspect-[3/2] w-full max-h-40 overflow-hidden bg-muted sm:max-h-48">
         {cover ? (
           <img
             src={cover}
@@ -37,15 +37,14 @@ const GameCard = ({ title, description, cover, icon, available = false, playUrl,
             loading="lazy"
             width={768}
             height={512}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-6xl">{icon}</div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
       </div>
-      <div className="p-6">
-        <h3 className="mb-2 text-xl text-primary">{title}</h3>
+      <div className="p-5">
         <p className="text-sm text-muted-foreground">{description}</p>
         {available && (
           <span className="mt-4 inline-block font-display text-sm uppercase tracking-wider text-primary">
