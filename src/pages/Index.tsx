@@ -35,11 +35,16 @@ const Index = () => {
         <h2 className="mb-8 text-center font-display text-3xl text-primary sm:text-4xl">
           Games
         </h2>
-        <div className="grid gap-6 sm:grid-cols-2">
+
+        {/* Tycoon Games */}
+        <h3 className="mb-4 font-display text-2xl text-primary">
+          Tycoon Games
+        </h3>
+        <div className="mb-10 grid gap-6 sm:grid-cols-2">
           <GameCard
-            title="Belgium Blitz"
-            description="A high-speed racing game — buckle up and burn rubber through waffle-themed tracks."
-            icon="🏎️"
+            title="Turtle Trade Co"
+            description="Build your shell-shocking trading empire one turtle at a time."
+            icon="🐢"
             available={false}
           />
           <GameCard
@@ -48,16 +53,17 @@ const Index = () => {
             icon="🧇"
             available={false}
           />
+        </div>
+
+        {/* Waffly Twists */}
+        <h3 className="mb-4 font-display text-2xl text-primary">
+          Waffly Twists
+        </h3>
+        <div className="grid gap-6 sm:grid-cols-2">
           <GameCard
             title="Waffle Craft"
             description="A block-building survival adventure — Minecraft, but crispier and better."
             icon="⛏️"
-            available={false}
-          />
-          <GameCard
-            title="Storm Surge Diner"
-            description="Survive a catastrophic hurricane while trapped inside a Waffle House. Can you make it out?"
-            icon="🌀"
             available={false}
           />
         </div>
