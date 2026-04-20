@@ -73,4 +73,17 @@
   .border-glow {
     box-shadow: 0 0 15px hsl(48 100% 50% / 0.2), inset 0 0 15px hsl(48 100% 50% / 0.05);
   }
+
+  @keyframes border-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 1px hsl(48 100% 50% / 0.4), 0 0 12px hsl(48 100% 50% / 0.25);
+    }
+    50% {
+      box-shadow: 0 0 0 2px hsl(48 100% 50% / 0.9), 0 0 28px hsl(48 100% 50% / 0.65);
+    }
+  }
+
+  .animate-border-pulse {
+    animation: border-pulse 2.4s ease-in-out infinite;
+  }
 }
