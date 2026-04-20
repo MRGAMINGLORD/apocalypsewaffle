@@ -37,13 +37,16 @@ const Index = () => {
         </h2>
 
         {/* Tycoon Games */}
-        <h3 className="mb-4 font-display text-2xl text-primary">
+        <h3 className="mb-1 font-display text-2xl text-primary">
           Tycoon Games
         </h3>
+        <p className="mb-4 text-sm text-muted-foreground italic">
+          tycoons that slowly grow with weird twists
+        </p>
         <div className="mb-10 grid gap-6 sm:grid-cols-2">
           <GameCard
             title="Turtle Trade Co"
-            description="Build your shell-shocking trading empire one turtle at a time."
+            description="Turtle Trade Co. is a chill island tycoon where you gather wood, sell turtles (while stopping escapes), fend off thieves, and expand your business—plus a strange hidden 67-themed mode..."
             icon="🐢"
             available={true}
             playUrl="/games/turtle-trade-co/"
@@ -57,9 +60,12 @@ const Index = () => {
         </div>
 
         {/* Waffly Twists */}
-        <h3 className="mb-4 font-display text-2xl text-primary">
+        <h3 className="mb-1 font-display text-2xl text-primary">
           Waffly Twists
         </h3>
+        <p className="mb-4 text-sm text-muted-foreground italic">
+          special twists on popular games
+        </p>
         <div className="grid gap-6 sm:grid-cols-2">
           <GameCard
             title="Waffle Craft"
