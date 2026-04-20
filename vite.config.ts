@@ -4,8 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
-  // IMPORTANT: Replace 'YOUR_REPO_NAME' with the actual name of your project
-  base: '/apocalypsewaffle/', 
+  base: '/',
   server: {
     host: "::",
     port: 8080,
