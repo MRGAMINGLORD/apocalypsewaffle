@@ -45,7 +45,8 @@ const Index = () => {
             title="Turtle Trade Co"
             description="Build your shell-shocking trading empire one turtle at a time."
             icon="🐢"
-            available={false}
+            available={true}
+            playUrl="/games/turtle-trade-co/"
           />
           <GameCard
             title="Waffle Works"
