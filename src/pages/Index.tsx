@@ -1,4 +1,7 @@
 import heroBg from "@/assets/hero-bg.png";
+import coverTurtleTradeCo from "@/assets/cover-turtle-trade-co.jpg";
+import coverWaffleWorks from "@/assets/cover-waffle-works.jpg";
+import coverWaffleCraft from "@/assets/cover-waffle-craft.jpg";
 import FeedbackForm from "@/components/FeedbackForm";
 import GameCard from "@/components/GameCard";
 import WhatsNew from "@/components/WhatsNew";
@@ -47,14 +50,14 @@ const Index = () => {
           <GameCard
             title="Turtle Trade Co"
             description="Turtle Trade Co. is a chill island tycoon where you gather wood, sell turtles (while stopping escapes), fend off thieves, and expand your business—plus a strange hidden 67-themed mode..."
-            icon="🐢"
+            cover={coverTurtleTradeCo}
             available={true}
             playUrl="/games/turtle-trade-co/"
           />
           <GameCard
             title="Waffle Works"
             description="A cookie clicker-style idle game. Keep the batter flowing and the iron hot!"
-            icon="🧇"
+            cover={coverWaffleWorks}
             available={false}
           />
         </div>
@@ -70,7 +73,7 @@ const Index = () => {
           <GameCard
             title="Waffle Craft"
             description="A block-building survival adventure — Minecraft, but crispier and better."
-            icon="⛏️"
+            cover={coverWaffleCraft}
             available={false}
           />
         </div>
