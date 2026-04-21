@@ -2,6 +2,7 @@ import heroBg from "@/assets/hero-bg.png";
 import coverTurtleTradeCo from "@/assets/cover-turtle-trade-co.jpg";
 import coverWaffleWorks from "@/assets/cover-waffle-works.jpg";
 import coverWaffleCraft from "@/assets/cover-waffle-craft.jpg";
+import coverDefenseOfBelgium from "@/assets/cover-defense-of-belgium.jpg";
 import FeedbackForm from "@/components/FeedbackForm";
 import GameCard from "@/components/GameCard";
 import WhatsNew from "@/components/WhatsNew";
@@ -74,6 +75,22 @@ const Index = () => {
             title="Waffle Craft"
             description="A block-building survival adventure — Minecraft, but crispier and better."
             cover={coverWaffleCraft}
+            available={false}
+          />
+        </div>
+
+        {/* Other Games */}
+        <h3 className="mb-1 mt-10 font-display text-2xl text-primary">
+          Other Games
+        </h3>
+        <p className="mb-4 text-sm text-muted-foreground italic">
+          some were built by us but most aren't
+        </p>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <GameCard
+            title="Defense of Belgium"
+            description="A retro terminal-style strategy game. May 10, 1940 — you are the Prime Minister of Belgium. Hold the line against the panzers."
+            cover={coverDefenseOfBelgium}
             available={false}
           />
         </div>
