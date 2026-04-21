@@ -1,37 +1,37 @@
 
-The user wants to integrate an HTML-based game (Turtle Trade Co.) into the React/Vite app. They want a clear file location to paste their HTML code into so it just works, and they want the "Play" button on the game card to open it.
 
-## Approach
+## Open games inside the hub via an iframe route
 
-Vite serves anything inside `/public` as a static asset at the root URL. So if I create `public/games/turtle-trade-co/index.html`, the user can paste their full HTML game into that file (including `<html>`, `<head>`, `<body>`, inline `<script>`, `<style>`, etc.) and it will be available at `/games/turtle-trade-co/`.
+Right now both games open in a new browser tab. We'll keep the user inside the hub by adding a dedicated React route that loads the game in a full-screen iframe, with a small "Back to hub" button overlay so they can return instantly.
 
-This is the cleanest pattern because:
-- HTML games are usually self-contained (canvas + JS) and don't need React.
-- No build step or conversion is required — paste and go.
-- Works for any future HTML games (Waffle Works, Waffle Craft) using the same pattern.
+## How it will work
 
-## Plan
+- Click **Play** on a game card → the hub navigates (in the same tab) to `/play/turtle-trade-co` or `/play/defense-of-belgium`.
+- That route renders a full-viewport iframe pointing at the existing static game files in `/public/games/...`.
+- A floating "← Back to hub" button (top-left, styled to match the post-apocalyptic yellow/black theme) returns the user to `/` without a full page reload — the hub state is preserved.
+- The browser back button also works naturally.
 
-1. **Create `public/games/turtle-trade-co/index.html`** with a placeholder HTML5 boilerplate and a clear comment block telling the user: "Paste your full game HTML here, replacing everything." Include a small "loading" message so it's not blank before they paste.
-
-2. **Update `src/components/GameCard.tsx`** to support a `playUrl` prop. When the card is `available` and has a `playUrl`, clicking it opens that URL in a new tab (`window.open(playUrl, '_blank')`).
-
-3. **Update `src/pages/Index.tsx`**:
-   - Set `Turtle Trade Co` to `available={true}` and pass `playUrl="/games/turtle-trade-co/"`.
-   - Leave the other games as `available={false}` for now.
-
-## How the user uses it
-
-- Open GitHub → navigate to `public/games/turtle-trade-co/index.html` → click edit → paste their full HTML → commit. The change syncs back to Lovable automatically and the game becomes playable from the card.
-- For future games: I'll create matching `public/games/<game-slug>/index.html` files when they're ready.
-
-## Notes / assumptions
-
-- Assuming the user's HTML is fully self-contained (single file with inline CSS/JS). If they have separate JS/asset files later, they can drop them into the same `public/games/turtle-trade-co/` folder and reference them with relative paths (e.g. `./game.js`).
-- Game opens in a new tab to avoid breaking the hub's React routing. (If they'd rather it open in the same tab or in a modal/iframe, easy to change.)
+```text
+┌──────────────────────────────────────────┐
+│ [← Back to hub]                          │  ← overlay button
+│                                          │
+│                                          │
+│         <iframe game content>            │
+│                                          │
+│                                          │
+└──────────────────────────────────────────┘
+```
 
 ## Files to change
 
-- `public/games/turtle-trade-co/index.html` (new)
-- `src/components/GameCard.tsx`
-- `src/pages/Index.tsx`
+- **`src/pages/PlayGame.tsx`** (new) — reads the `:gameId` URL param, looks it up in a small whitelist map (`turtle-trade-co` → `/games/turtle-trade-co/`, `defense-of-belgium` → `/games/defense-of-belgium/`), and renders a fixed-position full-screen iframe plus the Back button. Unknown IDs redirect to `NotFound`.
+- **`src/App.tsx`** — register the new route `<Route path="/play/:gameId" element={<PlayGame />} />` above the catch-all.
+- **`src/components/GameCard.tsx`** — replace the `window.open(playUrl, "_blank", ...)` behavior with `useNavigate()` from react-router. The `playUrl` prop becomes an in-app route (e.g. `/play/turtle-trade-co`) instead of a static file path.
+- **`src/pages/Index.tsx`** — update the two `playUrl` props on the Turtle Trade Co and Defense of Belgium cards to the new `/play/...` routes.
+
+## Notes
+
+- The static HTML files in `public/games/...` don't need to change at all — they keep working exactly as they do today, just rendered inside the iframe.
+- The whitelist in `PlayGame.tsx` keeps things tidy and prevents arbitrary URLs being loaded via the route param.
+- If a game ever needs to "exit to hub" from inside its own HTML, it can just `window.parent.postMessage(...)` later — we can wire that up if you want, but it's not needed for the basic experience.
+
