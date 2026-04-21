@@ -1,10 +1,24 @@
 import { useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { MessageSquare } from "lucide-react";
+
+const feedbackSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "Name is required" })
+    .max(100, { message: "Name must be 100 characters or less" }),
+  message: z
+    .string()
+    .trim()
+    .min(1, { message: "Message is required" })
+    .max(1000, { message: "Message must be 1000 characters or less" }),
+});
 
 const FeedbackForm = () => {
   const [name, setName] = useState("");
@@ -13,10 +27,22 @@ const FeedbackForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !message.trim()) return;
+
+    const parsed = feedbackSchema.safeParse({ name, message });
+    if (!parsed.success) {
+      toast({
+        title: "Invalid input",
+        description: parsed.error.issues[0]?.message ?? "Please check your input.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setLoading(true);
-    const { error } = await supabase.from("feedback").insert({ name: name.trim(), message: message.trim() });
+    const { error } = await supabase.from("feedback").insert({
+      name: parsed.data.name,
+      message: parsed.data.message,
+    });
     setLoading(false);
 
     if (error) {
