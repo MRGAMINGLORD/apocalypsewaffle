@@ -1,4 +1,5 @@
 import { Lock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface GameCardProps {
   title: string;
@@ -11,10 +12,15 @@ interface GameCardProps {
 }
 
 const GameCard = ({ title, description, cover, icon, available = false, playUrl, onClick }: GameCardProps) => {
+  const navigate = useNavigate();
   const handleClick = () => {
     if (!available) return;
     if (playUrl) {
-      window.open(playUrl, "_blank", "noopener,noreferrer");
+      if (playUrl.startsWith("/") && !playUrl.startsWith("//")) {
+        navigate(playUrl);
+      } else {
+        window.open(playUrl, "_blank", "noopener,noreferrer");
+      }
       return;
     }
     onClick?.();
