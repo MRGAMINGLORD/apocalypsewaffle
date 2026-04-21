@@ -53,7 +53,7 @@ const Index = () => {
             description="Turtle Trade Co. is a chill island tycoon where you gather wood, sell turtles (while stopping escapes), fend off thieves, and expand your business—plus a strange hidden 67-themed mode..."
             cover={coverTurtleTradeCo}
             available={true}
-            playUrl="/games/turtle-trade-co/"
+            playUrl="/play/turtle-trade-co"
           />
           <GameCard
             title="Waffle Works"
@@ -92,7 +92,7 @@ const Index = () => {
             description="A retro terminal-style strategy game. May 10, 1940 — you are the Prime Minister of Belgium. Hold the line against the panzers."
             cover={coverDefenseOfBelgium}
             available={true}
-            playUrl="/games/defense-of-belgium/"
+            playUrl="/play/defense-of-belgium"
           />
         </div>
       </section>
