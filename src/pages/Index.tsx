@@ -91,7 +91,8 @@ const Index = () => {
             title="Defense of Belgium"
             description="A retro terminal-style strategy game. May 10, 1940 — you are the Prime Minister of Belgium. Hold the line against the panzers."
             cover={coverDefenseOfBelgium}
-            available={false}
+            available={true}
+            playUrl="/games/defense-of-belgium/"
           />
         </div>
       </section>
