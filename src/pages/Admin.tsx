@@ -35,7 +35,7 @@ const Admin = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { navigate("/login"); return; }
 
-      const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" });
+      const { data } = await supabase.rpc("is_admin" as never);
       if (!data) { navigate("/"); toast({ title: "Access denied", variant: "destructive" }); return; }
 
       setIsAdmin(true);
