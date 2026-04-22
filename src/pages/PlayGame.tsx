@@ -2,8 +2,8 @@ import { useNavigate, useParams, Navigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 
 const GAMES: Record<string, { src: string; title: string }> = {
-  "turtle-trade-co": { src: "/games/turtle-trade-co/", title: "Turtle Trade Co" },
-  "defense-of-belgium": { src: "/games/defense-of-belgium/", title: "Defense of Belgium" },
+  "turtle-trade-co": { src: "/games/turtle-trade-co/index.html", title: "Turtle Trade Co" },
+  "defense-of-belgium": { src: "/games/defense-of-belgium/index.html", title: "Defense of Belgium" },
 };
 
 const PlayGame = () => {
