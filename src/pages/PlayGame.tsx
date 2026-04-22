@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
+import { setLastGame } from "@/lib/gameStorage";
 
 type GameId = "turtle-trade-co" | "defense-of-belgium" | "waffle-craft";
 
@@ -199,33 +200,63 @@ const PlayGame = () => {
     return () => window.clearTimeout(t);
   }, [game, loaded]);
 
+  useEffect(() => {
+    if (game && gameId) setLastGame(gameId);
+  }, [game, gameId]);
+
   if (!game) return <GameNotFound gameId={gameId} />;
 
   const Loader = LOADERS[gameId as GameId];
 
   return (
-    <div className="fixed inset-0 bg-background">
+    <div className="fixed inset-0 bg-background p-2 sm:p-3">
+      {/* Subtle bunker grid backdrop */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage:
+            "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
       <BackButton />
 
       {showLoader && !loaded && (
         <div className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-6 bg-background">
-          <Loader />
-          <div className="text-center">
-            <p className="font-display text-xl uppercase tracking-wider text-primary text-glow">
+          {/* Scanline overlay for bunker feel */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-20"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(0deg, hsl(var(--primary) / 0.15) 0px, hsl(var(--primary) / 0.15) 1px, transparent 1px, transparent 4px)",
+            }}
+          />
+          <div className="relative rounded-md border border-primary/60 bg-card/60 p-6 border-glow">
+            <Loader />
+          </div>
+          <div className="relative text-center">
+            <p className="font-display text-2xl uppercase tracking-wider text-primary text-glow">
               {game.title}
             </p>
-            <p className="mt-2 text-sm text-muted-foreground">{game.loadingFlavor}</p>
+            <p className="mt-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              &gt; {game.loadingFlavor}
+            </p>
           </div>
         </div>
       )}
 
-      <iframe
-        src={game.src}
-        title={game.title}
-        onLoad={() => setLoaded(true)}
-        className="h-full w-full border-0"
-        allow="fullscreen; autoplay; gamepad"
-      />
+      <div className="relative h-full w-full overflow-hidden rounded-md border border-primary/50 bg-card border-glow">
+        <iframe
+          src={game.src}
+          title={game.title}
+          onLoad={() => setLoaded(true)}
+          className="h-full w-full border-0 bg-background"
+          allow="fullscreen; autoplay; gamepad"
+        />
+      </div>
     </div>
   );
 };
