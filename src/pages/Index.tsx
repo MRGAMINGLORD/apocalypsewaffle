@@ -6,6 +6,7 @@ import coverDefenseOfBelgium from "@/assets/cover-defense-of-belgium.jpg";
 import FeedbackForm from "@/components/FeedbackForm";
 import GameCard from "@/components/GameCard";
 import WhatsNew from "@/components/WhatsNew";
+import SaveDataPanel from "@/components/SaveDataPanel";
 
 
 const Index = () => {
@@ -33,6 +34,8 @@ const Index = () => {
       {/* What's New */}
       <WhatsNew />
 
+      {/* Save / Continue */}
+      <SaveDataPanel />
 
       {/* Games */}
       <section className="mx-auto max-w-5xl px-6 pb-12 pt-10">
