@@ -7,6 +7,7 @@
 // convention if they want to scope it later.
 
 export const LAST_GAME_KEY = "apocalypse-waffle:last-game";
+export const SAVE_META_KEY = "apocalypse-waffle:save-meta";
 
 // Keys that belong to the hub itself and should NOT be considered "game data".
 const HUB_RESERVED_KEYS = new Set<string>([
@@ -35,6 +36,35 @@ export const getLastGame = (): string | null => {
     return localStorage.getItem(LAST_GAME_KEY);
   } catch {
     return null;
+  }
+};
+
+export interface SaveMeta {
+  [gameId: string]: { savedAt: number };
+}
+
+export const getSaveMeta = (): SaveMeta => {
+  try {
+    const raw = localStorage.getItem(SAVE_META_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+// Returns true if any game has actually persisted save data
+export const hasAnySave = (): boolean => {
+  try {
+    if (Object.keys(getSaveMeta()).length > 0) return true;
+    // Fallback: check known game keys directly
+    return Boolean(
+      localStorage.getItem("ttc:save:v1") ||
+        localStorage.getItem("dob:save:v1"),
+    );
+  } catch {
+    return false;
   }
 };
 

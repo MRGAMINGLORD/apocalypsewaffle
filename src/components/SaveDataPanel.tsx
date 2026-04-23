@@ -1,25 +1,56 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Play, Download, Upload } from "lucide-react";
+import { Play, Download, Upload, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   downloadGameData,
   getLastGame,
+  getSaveMeta,
+  hasAnySave,
   importGameData,
 } from "@/lib/gameStorage";
+import { getGame } from "@/lib/games";
 
-const GAME_TITLES: Record<string, string> = {
-  "turtle-trade-co": "Turtle Trade Co",
-  "defense-of-belgium": "Defense of Belgium",
-  "waffle-craft": "Waffle Craft",
+const formatRelative = (ts: number) => {
+  const diff = Date.now() - ts;
+  if (diff < 60_000) return "just now";
+  if (diff < 3_600_000) {
+    const m = Math.floor(diff / 60_000);
+    return `${m} minute${m === 1 ? "" : "s"} ago`;
+  }
+  if (diff < 86_400_000) {
+    const h = Math.floor(diff / 3_600_000);
+    return `${h} hour${h === 1 ? "" : "s"} ago`;
+  }
+  const d = Math.floor(diff / 86_400_000);
+  return `${d} day${d === 1 ? "" : "s"} ago`;
 };
 
 const SaveDataPanel = () => {
   const [lastGame, setLastGameState] = useState<string | null>(null);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [hasSave, setHasSave] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  const refresh = () => {
     setLastGameState(getLastGame());
+    const meta = getSaveMeta();
+    const allTimes = Object.values(meta).map((v) => v.savedAt);
+    setLastSavedAt(allTimes.length ? Math.max(...allTimes) : null);
+    setHasSave(hasAnySave());
+  };
+
+  useEffect(() => {
+    refresh();
+    const id = window.setInterval(refresh, 5000);
+    const onStorage = () => refresh();
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("focus", refresh);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("focus", refresh);
+    };
   }, []);
 
   const handleExport = () => {
@@ -39,7 +70,7 @@ const SaveDataPanel = () => {
 
   const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    e.target.value = ""; // allow re-importing the same file
+    e.target.value = "";
     if (!file) return;
     try {
       const text = await file.text();
@@ -47,18 +78,19 @@ const SaveDataPanel = () => {
       toast.success(
         `Imported ${result.imported} entr${result.imported === 1 ? "y" : "ies"}. Reload a game to see your progress.`,
       );
+      refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Import failed.");
     }
   };
 
-  const lastTitle = lastGame ? GAME_TITLES[lastGame] : null;
+  const lastTitle = lastGame ? getGame(lastGame)?.title ?? null : null;
 
   return (
     <section className="mx-auto max-w-5xl px-6 pb-2 pt-6">
       <div className="rounded-lg border border-primary/40 bg-card/60 p-5 border-glow">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
             <h3 className="font-display text-lg uppercase tracking-wider text-primary">
               Bunker Save Terminal
             </h3>
@@ -68,6 +100,29 @@ const SaveDataPanel = () => {
                 : "No previous deployments logged."}{" "}
               Backup your progress or restore it on another device.
             </p>
+
+            <div className="mt-3 flex flex-wrap items-center gap-2 font-display text-[10px] uppercase tracking-wider">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-sm border px-2 py-1 ${
+                  hasSave
+                    ? "border-primary/60 bg-primary/10 text-primary"
+                    : "border-destructive/60 bg-destructive/10 text-destructive"
+                }`}
+              >
+                {hasSave ? (
+                  <CheckCircle2 className="h-3 w-3" />
+                ) : (
+                  <AlertCircle className="h-3 w-3" />
+                )}
+                {hasSave ? "Saved" : "Not saved"}
+              </span>
+              <span className="rounded-sm border border-primary/40 bg-background/40 px-2 py-1 text-muted-foreground">
+                Last saved:{" "}
+                <span className="text-primary">
+                  {lastSavedAt ? formatRelative(lastSavedAt) : "never"}
+                </span>
+              </span>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2">

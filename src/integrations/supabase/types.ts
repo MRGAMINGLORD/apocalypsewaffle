@@ -35,6 +35,27 @@ export type Database = {
         }
         Relationships: []
       }
+      featured_games: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          position: number
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          position?: number
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          position?: number
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
           category: string

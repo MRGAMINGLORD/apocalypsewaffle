@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Trash2 } from "lucide-react";
+import FeaturedGamesAdmin from "@/components/FeaturedGamesAdmin";
 
 interface Feedback {
   id: string;
@@ -89,6 +90,9 @@ const Admin = () => {
           <h1 className="font-display text-3xl text-primary">Admin Dashboard</h1>
           <Button variant="outline" onClick={handleLogout}>Logout</Button>
         </div>
+
+        {/* Featured Games */}
+        <FeaturedGamesAdmin />
 
         {/* Add Announcement */}
         <div className="mb-10 rounded-lg border border-border bg-card p-6">
