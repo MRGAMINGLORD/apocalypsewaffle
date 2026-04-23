@@ -779,7 +779,81 @@
         }
     }
 
-    window.onload = startGame;
+    // ============ AUTOSAVE WRAPPER ============
+    const DOB_SAVE_KEY = 'dob:save:v1';
+    const DOB_META_KEY = 'apocalypse-waffle:save-meta';
+
+    function dobSave() {
+      try {
+        if (state.gameOver) {
+          localStorage.removeItem(DOB_SAVE_KEY);
+          dobUpdateMeta();
+          return;
+        }
+        // state contains only JSON-safe data (numbers, arrays, plain objects, booleans)
+        localStorage.setItem(DOB_SAVE_KEY, JSON.stringify({
+          savedAt: Date.now(),
+          state: state,
+        }));
+        dobUpdateMeta();
+      } catch (e) {
+        console.warn('[DoB] save failed', e);
+      }
+    }
+
+    function dobUpdateMeta() {
+      try {
+        const raw = localStorage.getItem(DOB_META_KEY);
+        const meta = raw ? JSON.parse(raw) : {};
+        meta['defense-of-belgium'] = { savedAt: Date.now() };
+        localStorage.setItem(DOB_META_KEY, JSON.stringify(meta));
+      } catch {}
+    }
+
+    function dobLoad() {
+      try {
+        const raw = localStorage.getItem(DOB_SAVE_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        if (!data || !data.state) return false;
+        // Replace top-level fields in state
+        Object.keys(state).forEach(k => delete state[k]);
+        Object.assign(state, data.state);
+        return true;
+      } catch (e) {
+        console.warn('[DoB] load failed', e);
+        return false;
+      }
+    }
+
+    // Wrap handleAction to autosave after each action
+    const __dobOriginalHandleAction = handleAction;
+    handleAction = async function(choice) {
+      const result = await __dobOriginalHandleAction(choice);
+      dobSave();
+      return result;
+    };
+
+    // Save on tab close / hide
+    window.addEventListener('pagehide', dobSave);
+    window.addEventListener('beforeunload', dobSave);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') dobSave();
+    });
+
+    // Init: load save before starting
+    window.onload = async function() {
+      const restored = dobLoad();
+      if (restored) {
+        toggleButtons(true);
+        updateStatsUI();
+        await printSlow("=== SAVE RESTORED ===", 'success');
+        await printSlow(`Resuming campaign... Phase ${state.phase}.\n`);
+        toggleButtons(false);
+      } else {
+        await startGame();
+      }
+    };
 </script>
 </body>
 </html>
