@@ -646,7 +646,109 @@ function uDTT(t){let p="";let s=0;if(t<=420){p="Day";s=t;}else if(t<=480){p="Dus
 function tD67(){if(!S)return;S.debug67=!S.debug67;let b=gI('btn-debug-67');b.innerText=S.debug67?'ON':'OFF';b.className=S.debug67?'px-3 py-1 bg-green-600 rounded font-bold text-xs':'px-3 py-1 bg-red-600 rounded font-bold text-xs';gI('debug-67-options').style.display=S.debug67?'block':'none';}
 function sADSChase(){let v=parseInt(gI('debug-ads-timer').value);if(isNaN(v)||v<=0)return;let eT=(S.timeOfDay+v)%840;if(eT<=480||eT>780){gI('ads-chase-status').innerText="Timer must end during the night (480-780)!";gI('ads-chase-status').className="text-xs mt-2 text-red-400";return;}S.adsChaseActive=!0;S.adsChaseTimer=v;gI('ads-chase-status').innerText=`Chase starts in ${v}s!`;gI('ads-chase-status').className="text-xs mt-2 text-green-400";}
 
-function wfT(){if(typeof THREE!=='undefined'){iGE();}else{setTimeout(wfT,100);}}
+// ============ AUTOSAVE WRAPPER ============
+const TTC_SAVE_KEY = 'ttc:save:v1';
+const TTC_META_KEY = 'apocalypse-waffle:save-meta';
+const TTC_SAFE_FIELDS = ['islandName','money','wood','loan','timeInDebt','currentInterestRate','shopLevel','stands','fenceLevel','harborLevel','forestLevel','conditions','foodLevel','turtleCost','radius','cashierHired','tipJarTotal','hasManager','pebbles','axeLevel','playerBoatBuilt','boatLevel','dayCount','hasVisitedWild','timeOfDay','debug67'];
+
+function ttcCollectSave(){
+  if (!Array.isArray(MI)) return null;
+  const islands = MI.map(is => {
+    const s = is.state || {};
+    const data = {};
+    TTC_SAFE_FIELDS.forEach(k => { if (k in s) data[k] = s[k]; });
+    const tcounts = { normal:0, golden:0, leatherback:0, spotted:0, snapping:0 };
+    (s.turtles || []).forEach(t => { const tt = (t && t.tType) || 'normal'; if (tcounts[tt] !== undefined) tcounts[tt]++; });
+    data.turtleCounts = tcounts;
+    return { name: is.name || s.islandName || 'Island', state: data };
+  });
+  return { savedAt: Date.now(), activeIndex: AI ? MI.indexOf(AI) : -1, islands };
+}
+
+function ttcSave(){
+  try {
+    const payload = ttcCollectSave();
+    if (!payload || payload.islands.length === 0) localStorage.removeItem(TTC_SAVE_KEY);
+    else localStorage.setItem(TTC_SAVE_KEY, JSON.stringify(payload));
+    ttcUpdateMeta();
+  } catch (e) { console.warn('[TTC] save failed', e); }
+}
+
+function ttcUpdateMeta(){
+  try {
+    const raw = localStorage.getItem(TTC_META_KEY);
+    const meta = raw ? JSON.parse(raw) : {};
+    meta['turtle-trade-co'] = { savedAt: Date.now() };
+    localStorage.setItem(TTC_META_KEY, JSON.stringify(meta));
+  } catch {}
+}
+
+function ttcRebuildIsland(saved){
+  const baseState = cDS(saved.name);
+  Object.keys(saved.state || {}).forEach(k => { if (k !== 'turtleCounts') baseState[k] = saved.state[k]; });
+  baseState.isGameOver = false;
+  baseState.gateOpen = false;
+  baseState.adsChaseActive = false;
+  baseState.adsChaseTimer = 0;
+  baseState.expeditionActive = false;
+  baseState.isSailing = false;
+  baseState.customers = [];
+  baseState.boats = [];
+  baseState.overflowPiles = [];
+  baseState.turtles = [];
+  baseState.caughtTurtles = [];
+  baseState.wildTurtles = [];
+  const ns = {
+    name: saved.name, state: baseState,
+    worldGroup: new THREE.Group(),
+    groups: { trees: new THREE.Group(), crates: new THREE.Group(), turtles: new THREE.Group(), customers: new THREE.Group(), boats: new THREE.Group(), food: new THREE.Group(), decoration: new THREE.Group(), harbor: new THREE.Group(), conditions: new THREE.Group(), fence: new THREE.Group(), shopInteract: new THREE.Group(), overflow: new THREE.Group(), pebbles: new THREE.Group() },
+    shopMesh:null, cashierObj:null, shopDoorTarget:null, checkoutTarget:null, restroomTarget:null, storageTarget:null, tipJarMoney:null, stairsBottom:null, stairsTop:null,
+    __pendingTurtleCounts: saved.state && saved.state.turtleCounts || null,
+  };
+  Object.values(ns.groups).forEach(g => ns.worldGroup.add(g));
+  MI.push(ns);
+  return ns;
+}
+
+function ttcLoadFromStorage(){
+  try {
+    const raw = localStorage.getItem(TTC_SAVE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.islands) || data.islands.length === 0) return false;
+    data.islands.forEach(is => ttcRebuildIsland(is));
+    return true;
+  } catch (e) { console.warn('[TTC] load failed', e); return false; }
+}
+
+const __ttcOriginalLI = lI;
+lI = function(ix){
+  const island = MI[ix];
+  __ttcOriginalLI(ix);
+  if (island && island.__pendingTurtleCounts) {
+    while (S.turtles.length > 0) {
+      const t = S.turtles.pop();
+      if (t.mesh) TUG.remove(t.mesh);
+      if (t.crateMesh) CRG.remove(t.crateMesh);
+    }
+    const counts = island.__pendingTurtleCounts;
+    Object.keys(counts).forEach(type => { for (let i = 0; i < counts[type]; i++) sT('backyard', false, type); });
+    island.__pendingTurtleCounts = null;
+    uUI();
+  }
+};
+
+let __ttcSaveTimer = null;
+function ttcDebouncedSave(){ if (__ttcSaveTimer) clearTimeout(__ttcSaveTimer); __ttcSaveTimer = setTimeout(ttcSave, 1500); }
+setInterval(() => { if (S && !S.isGameOver) ttcDebouncedSave(); }, 5000);
+window.addEventListener('pagehide', ttcSave);
+window.addEventListener('beforeunload', ttcSave);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') ttcSave(); });
+
+function wfT(){
+  if(typeof THREE!=='undefined'){ iGE(); setTimeout(() => { ttcLoadFromStorage(); }, 50); }
+  else { setTimeout(wfT,100); }
+}
 wfT();
 
 window.bSh=bSh;window.bSt=bSt;window.uSh=uSh;window.uAx=uAx;window.uFe=uFe;window.uCo=uCo;window.uHa=uHa;window.uFor=uFor;window.uFo=uFo;window.oSM=oSM;window.cSM=cSM;window.uSC=uSC;window.cSh=cSh;window.oFM=oFM;window.cFM=cFM;window.fTu=fTu;window.bAF=bAF;window.tLo=tLo;window.pLo=pLo;window.hCa=hCa;window.hMg=hMg;window.bPb=bPb;window.uPb=uPb;window.qTMM=qTMM;window.oWM=oWM;window.cWM=cWM;window.uWC=uWC;window.cBW=cBW;window.cSW=cSW;window.sIL=sIL;window.bTS=bTS;window.sCI=sCI;window.cCI=cCI;window.cfCI=cfCI;window.oG=oG;window.cG=cG;window.oDA=oDA;window.cDA=cDA;window.cDP=cDP;window.oDM=oDM;window.cDM=cDM;window.sDS=sDS;window.sDU=sDU;window.sDT=sDT;window.tD67=tD67;window.sADSChase=sADSChase;
