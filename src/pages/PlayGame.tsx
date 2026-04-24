@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { setLastGame } from "@/lib/gameStorage";
+import { fetchCustomGame } from "@/hooks/useCustomGames";
 
 type GameId = "turtle-trade-co" | "defense-of-belgium" | "waffle-craft";
 
@@ -185,32 +186,86 @@ const GameNotFound = ({ gameId }: { gameId?: string }) => (
   </div>
 );
 
+interface ResolvedGame {
+  src: string;
+  title: string;
+  loadingFlavor: string;
+  isCustom: boolean;
+}
+
 const PlayGame = () => {
   const { gameId } = useParams<{ gameId: string }>();
-  const game = gameId && (gameId in GAMES) ? GAMES[gameId as GameId] : undefined;
+  const builtIn = gameId && (gameId in GAMES) ? GAMES[gameId as GameId] : undefined;
 
+  const [resolved, setResolved] = useState<ResolvedGame | null>(
+    builtIn ? { ...builtIn, isCustom: false } : null,
+  );
+  const [resolving, setResolving] = useState(!builtIn);
+  const [notFound, setNotFound] = useState(false);
   const [showLoader, setShowLoader] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  const blobUrlRef = useMemo(() => ({ current: null as string | null }), []);
+
   useEffect(() => {
-    if (!game) return;
+    let active = true;
+    if (builtIn || !gameId) return;
+    setResolving(true);
+    setNotFound(false);
+    (async () => {
+      const row = await fetchCustomGame(gameId);
+      if (!active) return;
+      if (!row || !row.html.trim()) {
+        setNotFound(true);
+        setResolving(false);
+        return;
+      }
+      const blob = new Blob([row.html], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      blobUrlRef.current = url;
+      setResolved({
+        src: url,
+        title: row.title,
+        loadingFlavor: "Loading custom game...",
+        isCustom: true,
+      });
+      setResolving(false);
+    })();
+    return () => {
+      active = false;
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+        blobUrlRef.current = null;
+      }
+    };
+  }, [builtIn, gameId, blobUrlRef]);
+
+  useEffect(() => {
+    if (!resolved) return;
     const t = window.setTimeout(() => {
       if (!loaded) setShowLoader(true);
     }, LOADING_DELAY_MS);
     return () => window.clearTimeout(t);
-  }, [game, loaded]);
+  }, [resolved, loaded]);
 
   useEffect(() => {
-    if (game && gameId) setLastGame(gameId);
-  }, [game, gameId]);
+    if (resolved && gameId) setLastGame(gameId);
+  }, [resolved, gameId]);
 
-  if (!game) return <GameNotFound gameId={gameId} />;
+  if (resolving) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background">
+        <p className="font-display text-sm uppercase tracking-wider text-primary">Loading...</p>
+      </div>
+    );
+  }
 
-  const Loader = LOADERS[gameId as GameId];
+  if (notFound || !resolved) return <GameNotFound gameId={gameId} />;
+
+  const Loader = builtIn ? LOADERS[gameId as GameId] : null;
 
   return (
     <div className="fixed inset-0 bg-background p-2 sm:p-3">
-      {/* Subtle bunker grid backdrop */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-[0.06]"
@@ -225,7 +280,6 @@ const PlayGame = () => {
 
       {showLoader && !loaded && (
         <div className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-6 bg-background">
-          {/* Scanline overlay for bunker feel */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-20"
@@ -234,15 +288,17 @@ const PlayGame = () => {
                 "repeating-linear-gradient(0deg, hsl(var(--primary) / 0.15) 0px, hsl(var(--primary) / 0.15) 1px, transparent 1px, transparent 4px)",
             }}
           />
-          <div className="relative rounded-md border border-primary/60 bg-card/60 p-6 border-glow">
-            <Loader />
-          </div>
+          {Loader && (
+            <div className="relative rounded-md border border-primary/60 bg-card/60 p-6 border-glow">
+              <Loader />
+            </div>
+          )}
           <div className="relative text-center">
             <p className="font-display text-2xl uppercase tracking-wider text-primary text-glow">
-              {game.title}
+              {resolved.title}
             </p>
             <p className="mt-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
-              &gt; {game.loadingFlavor}
+              &gt; {resolved.loadingFlavor}
             </p>
           </div>
         </div>
@@ -250,8 +306,8 @@ const PlayGame = () => {
 
       <div className="relative h-full w-full overflow-hidden rounded-md border border-primary/50 bg-card border-glow">
         <iframe
-          src={game.src}
-          title={game.title}
+          src={resolved.src}
+          title={resolved.title}
           onLoad={() => setLoaded(true)}
           className="h-full w-full border-0 bg-background"
           allow="fullscreen; autoplay; gamepad"

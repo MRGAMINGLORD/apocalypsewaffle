@@ -11,11 +11,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { GAMES } from "@/lib/games";
+import { useCustomGames } from "@/hooks/useCustomGames";
 
 const Index = () => {
-  const tycoonGames = GAMES.filter((g) => g.category === "tycoon");
-  const twistGames = GAMES.filter((g) => g.category === "twist");
-  const otherGames = GAMES.filter((g) => g.category === "other");
+  const { games: customGames } = useCustomGames();
+  const allGames = [...GAMES, ...customGames];
+  const tycoonGames = allGames.filter((g) => g.category === "tycoon");
+  const twistGames = allGames.filter((g) => g.category === "twist");
+  const otherGames = allGames.filter((g) => g.category === "other");
 
   return (
     <div className="min-h-screen bg-background">

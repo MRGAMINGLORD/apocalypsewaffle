@@ -745,6 +745,14 @@ window.addEventListener('pagehide', ttcSave);
 window.addEventListener('beforeunload', ttcSave);
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') ttcSave(); });
 
+// Manual "Save Now" support — listen for broadcast from the hub
+try {
+  const __ttcBC = new BroadcastChannel('apocalypse-waffle');
+  __ttcBC.addEventListener('message', (e) => {
+    if (e && e.data && e.data.type === 'save-now') ttcSave();
+  });
+} catch {}
+
 function wfT(){
   if(typeof THREE!=='undefined'){ iGE(); setTimeout(() => { ttcLoadFromStorage(); }, 50); }
   else { setTimeout(wfT,100); }
