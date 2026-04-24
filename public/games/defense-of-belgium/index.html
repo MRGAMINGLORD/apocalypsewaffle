@@ -519,8 +519,8 @@
         return false;
     }
 
-    async function endGamePM() { toggleButtons(true); await printSlow("\n================ GAME OVER ================", 'warning'); }
-    async function endGameSoldier(victory) { toggleButtons(true); await printSlow("\n================ WAR OVER ================", 'system'); await printSlow("You have fallen in combat.", 'warning'); }
+    async function endGamePM() { state.gameOver = true; toggleButtons(true); await printSlow("\n================ GAME OVER ================", 'warning'); try { dobSave(); } catch {} showRestartButton(); }
+    async function endGameSoldier(victory) { state.gameOver = true; toggleButtons(true); await printSlow("\n================ WAR OVER ================", 'system'); await printSlow("You have fallen in combat.", 'warning'); try { dobSave(); } catch {} showRestartButton(); }
 
     // ==========================================
     // PHASE 3: COFFEE SHOP
@@ -783,6 +783,25 @@
     const DOB_SAVE_KEY = 'dob:save:v1';
     const DOB_META_KEY = 'apocalypse-waffle:save-meta';
 
+    // Restart UI shown after game over (or when restoring a dead save)
+    function showRestartButton() {
+      if (document.getElementById('dob-restart-btn')) return;
+      const btn = document.createElement('button');
+      btn.id = 'dob-restart-btn';
+      btn.textContent = '↻ RESTART CAMPAIGN';
+      btn.style.cssText = 'margin: 16px auto; display: block; padding: 12px 24px; background: #33ff33; color: #0c0c0c; border: none; font-family: "Courier New", monospace; font-weight: bold; font-size: 14px; cursor: pointer; letter-spacing: 2px;';
+      btn.onmouseover = () => { btn.style.background = '#66ff66'; };
+      btn.onmouseout = () => { btn.style.background = '#33ff33'; };
+      btn.onclick = () => {
+        try { localStorage.removeItem(DOB_SAVE_KEY); } catch {}
+        location.reload();
+      };
+      const container = document.getElementById('game-container') || document.body;
+      container.appendChild(btn);
+    }
+    // Expose for outside callers
+    window.dobShowRestart = showRestartButton;
+
     function dobSave() {
       try {
         if (state.gameOver) {
@@ -841,12 +860,34 @@
       if (document.visibilityState === 'hidden') dobSave();
     });
 
+    // Detect a "dead" / finished state from older saves where gameOver wasn't set
+    function dobIsDeadState() {
+      if (state.gameOver) return true;
+      if (state.phase === 1 && (state.enemyAdvance >= 100 || state.troops <= 0 || state.morale <= 0)) return true;
+      if (state.phase === 2 && state.health <= 0) return true;
+      return false;
+    }
+
+    // Manual "Save Now" support — listen for broadcast from the hub
+    try {
+      const __dobBC = new BroadcastChannel('apocalypse-waffle');
+      __dobBC.addEventListener('message', (e) => {
+        if (e && e.data && e.data.type === 'save-now') dobSave();
+      });
+    } catch {}
+
     // Init: load save before starting
     window.onload = async function() {
       const restored = dobLoad();
       if (restored) {
         toggleButtons(true);
         updateStatsUI();
+        if (dobIsDeadState()) {
+          await printSlow("=== PREVIOUS CAMPAIGN ENDED ===", 'warning');
+          await printSlow("Your last campaign was lost. Restart to fight again.\n");
+          showRestartButton();
+          return;
+        }
         await printSlow("=== SAVE RESTORED ===", 'success');
         await printSlow(`Resuming campaign... Phase ${state.phase}.\n`);
         toggleButtons(false);
