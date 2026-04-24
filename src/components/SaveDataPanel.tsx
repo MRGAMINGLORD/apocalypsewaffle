@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Play, Download, Upload, CheckCircle2, AlertCircle } from "lucide-react";
+import { Play, Download, Upload, CheckCircle2, AlertCircle, Save } from "lucide-react";
 import { toast } from "sonner";
 import {
   downloadGameData,
@@ -84,6 +84,24 @@ const SaveDataPanel = () => {
     }
   };
 
+  const handleSaveNow = () => {
+    // Tell any open game tabs/iframes to save immediately, then refresh status.
+    try {
+      const bc = new BroadcastChannel("apocalypse-waffle");
+      bc.postMessage({ type: "save-now" });
+      bc.close();
+    } catch {
+      // BroadcastChannel unavailable — that's fine, hub still re-reads localStorage below.
+    }
+    // Give the games a moment to write, then refresh the panel.
+    window.setTimeout(() => {
+      refresh();
+      const saved = hasAnySave();
+      if (saved) toast.success("Save committed to bunker storage.");
+      else toast.message("Nothing to save yet — start a game first.");
+    }, 250);
+  };
+
   const lastTitle = lastGame ? getGame(lastGame)?.title ?? null : null;
 
   return (
@@ -135,6 +153,13 @@ const SaveDataPanel = () => {
                 Play {lastTitle} again
               </Link>
             )}
+            <button
+              onClick={handleSaveNow}
+              className="inline-flex items-center gap-2 rounded-md border border-primary/60 bg-background/40 px-3 py-2 font-display text-xs uppercase tracking-wider text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+            >
+              <Save className="h-4 w-4" />
+              Save Now
+            </button>
             <button
               onClick={handleExport}
               className="inline-flex items-center gap-2 rounded-md border border-primary/60 bg-background/40 px-3 py-2 font-display text-xs uppercase tracking-wider text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
