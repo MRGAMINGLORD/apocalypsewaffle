@@ -40,6 +40,14 @@ const Index = () => {
             serving food, you play as a customer fighting to survive
             catastrophic natural disasters while trapped inside a Waffle House.
           </p>
+          <div className="mt-4">
+            <a
+              href="/test"
+              className="inline-flex items-center gap-1 rounded-sm border border-primary/40 bg-background/40 px-2 py-1 font-display text-[10px] uppercase tracking-wider text-primary/70 hover:text-primary"
+            >
+              ⚙ Test Mode
+            </a>
+          </div>
         </div>
       </section>
 
