@@ -116,7 +116,8 @@ const SaveDataPanel = () => {
               {lastTitle
                 ? `Last deployment: ${lastTitle}.`
                 : "No previous deployments logged."}{" "}
-              Backup your progress or restore it on another device.
+              Use <span className="text-primary">Export save</span> to back up your progress to a file, and{" "}
+              <span className="text-primary">Import save</span> to restore it on this or another device.
             </p>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 font-display text-[10px] uppercase tracking-wider">
@@ -165,14 +166,14 @@ const SaveDataPanel = () => {
               className="inline-flex items-center gap-2 rounded-md border border-primary/60 bg-background/40 px-3 py-2 font-display text-xs uppercase tracking-wider text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               <Download className="h-4 w-4" />
-              Export
+              Export save
             </button>
             <button
               onClick={handleImportClick}
               className="inline-flex items-center gap-2 rounded-md border border-primary/60 bg-background/40 px-3 py-2 font-display text-xs uppercase tracking-wider text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               <Upload className="h-4 w-4" />
-              Import
+              Import save
             </button>
             <input
               ref={fileInputRef}
