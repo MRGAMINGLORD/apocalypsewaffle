@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { setLastGame } from "@/lib/gameStorage";
+import { fetchCustomGame } from "@/hooks/useCustomGames";
 
 type GameId = "turtle-trade-co" | "defense-of-belgium" | "waffle-craft";
 
