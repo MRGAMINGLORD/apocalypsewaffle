@@ -30,7 +30,7 @@ const GAMES: Record<GameId, { src: string; title: string; loadingFlavor: string 
 };
 
 // Show the loading screen only if the iframe takes longer than this to load.
-const LOADING_DELAY_MS = 600;
+const LOADING_DELAY_MS = 50;
 
 const TurtleLoader = () => (
   <div className="relative h-40 w-72 overflow-hidden">
