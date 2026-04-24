@@ -133,29 +133,22 @@ const CustomGamesAdmin = () => {
         {editingId ? "Edit Custom Game" : "Post New Custom Game"}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="cg-title">Title</Label>
-            <Input
-              id="cg-title"
-              placeholder="My New Game"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              maxLength={80}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="cg-cover">Cover image URL</Label>
-            <Input
-              id="cg-cover"
-              placeholder="https://..."
-              value={coverUrl}
-              onChange={(e) => setCoverUrl(e.target.value)}
-              maxLength={500}
-            />
-          </div>
+        <div>
+          <Label htmlFor="cg-title">Title</Label>
+          <Input
+            id="cg-title"
+            placeholder="My New Game"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={80}
+            required
+          />
         </div>
+        <CoverImagePicker
+          value={coverUrl}
+          onChange={setCoverUrl}
+          hint={title}
+        />
         <div>
           <Label htmlFor="cg-desc">Description</Label>
           <Textarea
