@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Trash2 } from "lucide-react";
 import FeaturedGamesAdmin from "@/components/FeaturedGamesAdmin";
+import CustomGamesAdmin from "@/components/CustomGamesAdmin";
 
 interface Feedback {
   id: string;
@@ -93,6 +94,9 @@ const Admin = () => {
 
         {/* Featured Games */}
         <FeaturedGamesAdmin />
+
+        {/* Custom Games (admin-created) */}
+        <CustomGamesAdmin />
 
         {/* Add Announcement */}
         <div className="mb-10 rounded-lg border border-border bg-card p-6">
