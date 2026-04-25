@@ -4,7 +4,7 @@ import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { setLastGame } from "@/lib/gameStorage";
 import { fetchCustomGame } from "@/hooks/useCustomGames";
 
-type GameId = "turtle-trade-co" | "defense-of-belgium" | "waffle-craft";"neon-snake"
+type GameId = "turtle-trade-co" | "defense-of-belgium" | "waffle-craft" | "neon-snake";
 
 const GAMES: Record<GameId, { src: string; title: string; loadingFlavor: string }> = {
   "turtle-trade-co": {
@@ -147,7 +147,7 @@ const MinecartLoader = () => (
   </div>
 );
 
-const LOADERS: Record<GameId, () => JSX.Element> = {
+const LOADERS: Partial<Record<GameId, () => JSX.Element>> = {
   "turtle-trade-co": TurtleLoader,
   "defense-of-belgium": TanksLoader,
   "waffle-craft": MinecartLoader,
