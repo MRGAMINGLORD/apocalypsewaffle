@@ -147,7 +147,7 @@ const MinecartLoader = () => (
   </div>
 );
 
-const LOADERS: Record<GameId, () => JSX.Element> = {
+const LOADERS: Partial<Record<GameId, () => JSX.Element>> = {
   "turtle-trade-co": TurtleLoader,
   "defense-of-belgium": TanksLoader,
   "waffle-craft": MinecartLoader,
