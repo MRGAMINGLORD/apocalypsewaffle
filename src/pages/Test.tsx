@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Code2, Send, Trash2, Lock, Loader2, Plus } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Code2, Send, Trash2, Lock, Loader2, Plus, Eye, EyeOff, Wrench, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTestGames, type TestGameRow } from "@/hooks/useTestGames";
@@ -22,6 +28,8 @@ import {
   unlockEdit,
 } from "@/lib/testAuth";
 import CoverImagePicker from "@/components/CoverImagePicker";
+import GameCard from "@/components/GameCard";
+import { GAMES, type GameMeta } from "@/lib/games";
 import heroBg from "@/assets/hero-bg.png";
 
 const CATEGORIES = ["tycoon", "twist", "other"] as const;
@@ -133,7 +141,7 @@ const EditPasswordDialog = ({
   );
 };
 
-// ---------- Edit game modal ----------
+// ---------- Edit game modal (with safe Preview) ----------
 const EditGameDialog = ({
   game,
   open,
@@ -152,6 +160,11 @@ const EditGameDialog = ({
   const [html, setHtml] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Preview state
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewRefreshKey = useMemo(() => ({ current: 0 }), []);
+
   // Sync when opened with a different game
   if (game && open && title === "" && description === "" && html === "" && coverUrl === "") {
     setTitle(game.title);
@@ -165,12 +178,42 @@ const EditGameDialog = ({
     setHtml(game.html);
   }
 
+  const cleanupPreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+  };
+
   const handleClose = (v: boolean) => {
     if (!v) {
       setTitle(""); setDescription(""); setCoverUrl(""); setHtml(""); setCategory("other");
+      setPreviewOpen(false);
+      cleanupPreview();
     }
     onOpenChange(v);
   };
+
+  const runPreview = () => {
+    cleanupPreview();
+    if (!html.trim()) {
+      toast({ title: "Nothing to preview", description: "Paste some HTML first.", variant: "destructive" });
+      return;
+    }
+    const blob = new Blob([html], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    setPreviewUrl(url);
+    setPreviewOpen(true);
+    previewRefreshKey.current += 1;
+  };
+
+  // Revoke blob on dialog close
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const save = async () => {
     if (!game) return;
@@ -197,47 +240,94 @@ const EditGameDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+      <DialogContent className="max-h-[92vh] max-w-5xl overflow-hidden">
         <DialogHeader>
           <DialogTitle>Edit: {game?.title ?? ""}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
-          <div>
-            <Label>Title</Label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} />
-          </div>
-          <CoverImagePicker value={coverUrl} onChange={setCoverUrl} hint={title} />
-          <div>
-            <Label>Description</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} maxLength={500} />
-          </div>
-          <div>
-            <Label>Category</Label>
-            <div className="mt-1 flex gap-2">
-              {CATEGORIES.map((c) => (
-                <Button
-                  key={c}
-                  type="button"
-                  size="sm"
-                  variant={category === c ? "default" : "outline"}
-                  onClick={() => setCategory(c)}
-                >
-                  {c}
-                </Button>
-              ))}
+
+        <div className="grid max-h-[72vh] gap-4 overflow-y-auto md:grid-cols-2">
+          {/* Left: form */}
+          <div className="space-y-3">
+            <div>
+              <Label>Title</Label>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={80} />
+            </div>
+            <CoverImagePicker value={coverUrl} onChange={setCoverUrl} hint={title} />
+            <div>
+              <Label>Description</Label>
+              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} maxLength={500} />
+            </div>
+            <div>
+              <Label>Category</Label>
+              <div className="mt-1 flex gap-2">
+                {CATEGORIES.map((c) => (
+                  <Button
+                    key={c}
+                    type="button"
+                    size="sm"
+                    variant={category === c ? "default" : "outline"}
+                    onClick={() => setCategory(c)}
+                  >
+                    {c}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label>Game code (HTML)</Label>
+                <div className="flex gap-1">
+                  <Button type="button" size="sm" variant="outline" onClick={runPreview}>
+                    {previewOpen ? <RefreshCw className="mr-1 h-3 w-3" /> : <Eye className="mr-1 h-3 w-3" />}
+                    {previewOpen ? "Refresh preview" : "Preview"}
+                  </Button>
+                  {previewOpen && (
+                    <Button type="button" size="sm" variant="ghost" onClick={() => { setPreviewOpen(false); cleanupPreview(); }}>
+                      <EyeOff className="mr-1 h-3 w-3" />
+                      Hide
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <Textarea
+                value={html}
+                onChange={(e) => setHtml(e.target.value)}
+                rows={14}
+                className="mt-1 font-mono text-xs"
+                placeholder="<html>...</html>"
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">
+                Preview renders the HTML in a sandboxed iframe. Nothing is posted to live until you save and click "Post to live".
+              </p>
             </div>
           </div>
-          <div>
-            <Label>Game code (HTML)</Label>
-            <Textarea
-              value={html}
-              onChange={(e) => setHtml(e.target.value)}
-              rows={16}
-              className="font-mono text-xs"
-              placeholder="<html>...</html>"
-            />
+
+          {/* Right: live preview pane */}
+          <div className="flex flex-col">
+            <Label className="mb-1">Preview</Label>
+            <div className="relative flex-1 overflow-hidden rounded-md border border-primary/40 bg-card">
+              {previewOpen && previewUrl ? (
+                <iframe
+                  key={previewRefreshKey.current}
+                  src={previewUrl}
+                  title={`${title} preview`}
+                  className="h-full min-h-[420px] w-full border-0 bg-background"
+                  sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+                  allow="fullscreen; autoplay; gamepad"
+                />
+              ) : (
+                <div className="flex h-full min-h-[420px] flex-col items-center justify-center gap-2 p-6 text-center text-muted-foreground">
+                  <Eye className="h-8 w-8 opacity-60" />
+                  <p className="font-display text-xs uppercase tracking-wider">Preview is hidden</p>
+                  <p className="text-xs">
+                    Click <span className="font-display text-primary">Preview</span> to render your edits without posting.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={() => handleClose(false)}>
             Cancel
@@ -314,92 +404,77 @@ const NewGameDialog = ({ onCreated }: { onCreated: () => void }) => {
   );
 };
 
-// ---------- Test game card ----------
-const TestGameCard = ({
-  game,
-  onEditRequest,
+// ---------- Hub-style card with optional manage overlay ----------
+const TestHubCard = ({
+  meta,
+  testRow,
+  manage,
+  onEdit,
   onPost,
   onDelete,
 }: {
-  game: TestGameRow;
-  onEditRequest: (g: TestGameRow) => void;
-  onPost: (g: TestGameRow) => void;
-  onDelete: (g: TestGameRow) => void;
+  meta: GameMeta;
+  testRow?: TestGameRow;
+  manage: boolean;
+  onEdit?: (g: TestGameRow) => void;
+  onPost?: (g: TestGameRow) => void;
+  onDelete?: (g: TestGameRow) => void;
 }) => {
-  const playable = game.html.trim().length > 0;
+  // Render same look as live hub
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-primary/40 bg-card transition-transform duration-300 hover:scale-[1.02] hover:border-primary">
-      <div className="relative aspect-[3/2] w-full overflow-hidden bg-muted">
-        {game.cover_url ? (
-          <img
-            src={game.cover_url}
-            alt={`${game.title} cover`}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center font-display text-sm uppercase text-muted-foreground">
-            No cover
-          </div>
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
-
-        {/* Hover overlay with actions */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/80 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-          <Button size="sm" onClick={() => onEditRequest(game)}>
-            <Code2 className="mr-1 h-4 w-4" />
-            Edit code
-          </Button>
-          {playable && (
-            <Button size="sm" variant="secondary" asChild>
-              <Link to={`/play-test/${game.slug}`}>
-                ▶ Play (test)
-              </Link>
+    <div className="relative">
+      <GameCard
+        title={meta.title}
+        description={meta.description}
+        cover={meta.cover}
+        available={meta.available}
+        playUrl={meta.playUrl}
+      />
+      {manage && testRow && (
+        <div className="pointer-events-none absolute inset-0 flex items-end justify-center p-3">
+          <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-1 rounded-md border border-primary/60 bg-background/90 p-1 shadow-lg backdrop-blur">
+            <Button size="sm" variant="secondary" onClick={() => onEdit?.(testRow)}>
+              <Code2 className="mr-1 h-3 w-3" />
+              Edit
             </Button>
-          )}
+            <Button
+              size="sm"
+              onClick={() => onPost?.(testRow)}
+              disabled={!testRow.html.trim()}
+              title={testRow.html.trim() ? "Promote to live" : "Add code first"}
+            >
+              <Send className="mr-1 h-3 w-3" />
+              Post live
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => onDelete?.(testRow)}>
+              <Trash2 className="h-3 w-3 text-destructive" />
+            </Button>
+          </div>
         </div>
-      </div>
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="font-display text-lg uppercase tracking-wide text-primary">
-            {game.title}
-          </h3>
-          <span className="font-display text-[10px] uppercase tracking-wider text-muted-foreground">
-            {game.category}
-          </span>
-        </div>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {game.description || <em>No description</em>}
-        </p>
-        <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          {playable ? "✓ has code" : "⚠ no code"}
-        </p>
-        <div className="mt-3 flex gap-2">
-          <Button
-            size="sm"
-            variant="default"
-            onClick={() => onPost(game)}
-            disabled={!playable}
-            title={playable ? "Promote to live hub" : "Add code first"}
-          >
-            <Send className="mr-1 h-4 w-4" />
-            Post to live
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => onDelete(game)}>
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
 
 // ---------- Main page ----------
+const testRowToMeta = (row: TestGameRow): GameMeta => ({
+  id: row.slug,
+  title: row.title,
+  description: row.description,
+  cover: row.cover_url || "/placeholder.svg",
+  available: row.html.trim().length > 0,
+  playUrl: `/play-test/${row.slug}`,
+  category:
+    row.category === "tycoon" || row.category === "twist" ? row.category : "other",
+});
+
 const Test = () => {
   const [unlocked, setUnlocked] = useState(isTestUnlocked());
   const { rows, loading, reload } = useTestGames();
   const [editPwOpen, setEditPwOpen] = useState(false);
   const [editingGame, setEditingGame] = useState<TestGameRow | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [manageMode, setManageMode] = useState(false);
 
   if (!unlocked) return <TestGate onUnlock={() => setUnlocked(true)} />;
 
@@ -442,55 +517,132 @@ const Test = () => {
     reload();
   };
 
+  // Build the same category buckets the live hub uses, but populated from
+  // the registry PLUS the test_custom_games table.
+  const testMetas = rows.map(testRowToMeta);
+  const testRowBySlug = new Map(rows.map((r) => [r.slug, r]));
+  const allGames: GameMeta[] = [...GAMES, ...testMetas];
+  const tycoonGames = allGames.filter((g) => g.category === "tycoon");
+  const twistGames = allGames.filter((g) => g.category === "twist");
+  const otherGames = allGames.filter((g) => g.category === "other");
+
+  const renderGrid = (list: GameMeta[]) => (
+    <div className="grid gap-6 pt-2 sm:grid-cols-2">
+      {list.map((g) => (
+        <TestHubCard
+          key={g.id}
+          meta={g}
+          testRow={testRowBySlug.get(g.id)}
+          manage={manageMode}
+          onEdit={requestEdit}
+          onPost={handlePost}
+          onDelete={handleDelete}
+        />
+      ))}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero */}
-      <section className="relative flex min-h-[40vh] items-center justify-center overflow-hidden">
+      {/* Hero — mirrors live hub but labelled TEST MODE */}
+      <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden">
         <img
           src={heroBg}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-30"
+          className="absolute inset-0 h-full w-full object-cover opacity-40"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background" />
         <div className="relative z-10 px-6 text-center">
-          <h1 className="mb-2 font-display text-5xl tracking-tight text-primary text-glow sm:text-7xl">
-            APOCALYPSE WAFFLE — TEST MODE
+          <h1 className="mb-2 font-display text-6xl tracking-tight text-primary text-glow sm:text-8xl">
+            APOCALYPSE WAFFLE
           </h1>
-          <p className="mx-auto max-w-xl text-base text-primary">
-            Staging area. Edit, preview, then "Post to live" to push a game to the public hub.
+          <p className="font-display text-sm uppercase tracking-[0.4em] text-destructive">
+            ⚠ TEST MODE — staging build
           </p>
-          <div className="mt-4 flex justify-center gap-2">
+          <p className="mx-auto mt-3 max-w-xl text-base text-primary">
+            Same hub layout as live. Edit games here, preview safely, then "Post to live" to sync them to the public site.
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
             <Button asChild variant="outline">
               <Link to="/">← Back to live hub</Link>
             </Button>
             <NewGameDialog onCreated={reload} />
+            <Button
+              variant={manageMode ? "default" : "outline"}
+              onClick={() => setManageMode((m) => !m)}
+            >
+              <Wrench className="mr-1 h-4 w-4" />
+              {manageMode ? "Manage: ON" : "Manage"}
+            </Button>
           </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Toggle <span className="font-display text-primary">Manage</span> to reveal Edit / Post / Delete on each card.
+          </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-6 pb-12 pt-6">
-        <h2 className="mb-4 font-display text-2xl uppercase tracking-wider text-primary">
-          Test Games ({rows.length})
+      {/* Games — same accordion structure as the live hub */}
+      <section className="mx-auto max-w-5xl px-6 pb-12 pt-10">
+        <h2 className="mb-6 text-center font-display text-3xl text-primary sm:text-4xl">
+          Games {loading && <span className="text-sm text-muted-foreground">(loading...)</span>}
         </h2>
-        {loading ? (
-          <p className="text-muted-foreground">Loading...</p>
-        ) : rows.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-primary/40 p-10 text-center text-muted-foreground">
-            No test games yet. Click <strong>New test game</strong> to start.
-          </div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {rows.map((g) => (
-              <TestGameCard
-                key={g.id}
-                game={g}
-                onEditRequest={requestEdit}
-                onPost={handlePost}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-        )}
+
+        <Accordion
+          type="multiple"
+          defaultValue={["tycoon", "twist", "other"]}
+          className="space-y-3"
+        >
+          <AccordionItem
+            value="tycoon"
+            className="rounded-lg border border-primary/40 bg-card/40 px-4 border-glow"
+          >
+            <AccordionTrigger className="hover:no-underline">
+              <div className="text-left">
+                <div className="font-display text-xl uppercase tracking-wider text-primary">
+                  Tycoon Games
+                </div>
+                <div className="text-xs italic text-muted-foreground">
+                  tycoons that slowly grow with weird twists
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>{renderGrid(tycoonGames)}</AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem
+            value="twist"
+            className="rounded-lg border border-primary/40 bg-card/40 px-4 border-glow"
+          >
+            <AccordionTrigger className="hover:no-underline">
+              <div className="text-left">
+                <div className="font-display text-xl uppercase tracking-wider text-primary">
+                  Waffly Twists
+                </div>
+                <div className="text-xs italic text-muted-foreground">
+                  special twists on popular games
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>{renderGrid(twistGames)}</AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem
+            value="other"
+            className="rounded-lg border border-primary/40 bg-card/40 px-4 border-glow"
+          >
+            <AccordionTrigger className="hover:no-underline">
+              <div className="text-left">
+                <div className="font-display text-xl uppercase tracking-wider text-primary">
+                  Other Games
+                </div>
+                <div className="text-xs italic text-muted-foreground">
+                  some were built by us but most aren't
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>{renderGrid(otherGames)}</AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </section>
 
       <EditPasswordDialog
